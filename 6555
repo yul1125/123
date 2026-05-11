@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>古早味早餐店 - 線上點餐</title>
+    <style>
+        /* 基礎設定與手機 App 風格 */
+        :root {
+            --primary-color: #e63946;
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --text-main: #1d3557;
+            --text-muted: #6c757d;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding-bottom: 80px; /* 留空間給底部購物車 */
+        }
+
+        /* 頂部導覽列 */
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 16px 20px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* 主要內容區 */
+        .container {
+            max-width: 600px; /* 適合手機與平版 */
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* 分類標題 */
+        .category-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+            padding-left: 10px;
+        }
+
+        /* 餐點卡片清單 */
+        .menu-list {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-name {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .item-price {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 加入按鈕 */
+        .add-btn {
+            background-color: #edf2f4;
+            color: var(--primary-color);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .add-btn:active {
+            background-color: #d8e2e6;
+        }
+
+        /* 底部懸浮購物車 */
+        .cart-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 20;
+        }
+
+        .cart-bar-inner {
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-total {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .checkout-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .checkout-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        早安！古早味早餐店
+    </div>
+
+    <div class="container">
+        
+        <div class="category-title">🍞 吐司與三明治</div>
+        <div class="menu-list">
+            <div class="menu-item">
+                <div class="item-info">
+                    <span class="item-name">饅頭夾蛋</span>
+                    <span class="item-price">$30</span>
+                </div>
+                <button class="add-btn" onclick="addToCart(30)">+</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-info">
+                    <span class="item-name">肉鬆土司</span>
+                    <span class="item-price">$25</span>
+                </div>
+                <button class="add-btn" onclick="addToCart(25)">+</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-info">
+                    <span class="item-name">夾蛋土司</span>
+                    <span class="item-price">$25</span>
+                </div>
+                <button class="add-btn" onclick="addToCart(25)">+</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-info">
+                    <span class="item-name">三明治</span>
+                    <span class="item-price">$20</span>
+                </div>
+                <button class="add-btn" onclick="addToCart(20)">+</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-info">
+                    <span class="item-name">巧克力/花生/草莓土司</span>
+                    <span class="item-price">$15</span>
+                </div>
+                <button class="add-btn" onclick="addToCart(15)">+</button>
+            </div>
+        </div>
+
+        <div class="category-title">🍚 傳統主食</div>
+        <div class="menu-list">
+            <div class="menu-item">
+                <div class="item-info">
+                    <span class="item-name">肉粽</span>
+                    <span class="item-price">$35</span>
+                </div>
+                <button class="add-btn" onclick="addToCart(35)">+</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-info">
+                    <span class="item-name">魯肉飯</span>
+                    <span class="item-price">$30</span>
+                </div>
+                <button class="add-btn" onclick="addToCart(30)">+</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-info">
+                    <span class="item-name">米糕 / 炒麵 / 炒米粉 / 碗粿</span>
+                    <span class="item-price">$25</span>
+                </div>
+                <button class="add-btn" onclick="addToCart(25)">+</button>
+            </div>
+        </div>
+
+        <div class="category-title">🍳 蛋餅與小點</div>
+        <div class="menu-list">
+            <div class="menu-item">
+                <div class="item-info">
+                    <span class="item-name">蛋餅</span>
+                    <span class="item-price">$30</span>
+                </div>
+                <button class="add-btn" onclick="addToCart(30)">+</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-info">
+                    <span class="item-name">油條 / 蔥蛋 / 荷包蛋</span>
+                    <span class="item-price">$15</span>
+                </div>
+                <button class="add-btn" onclick="addToCart(15)">+</button>
+            </div>
+        </div>
+
+        <div class="category-title">🥣 暖心湯品</div>
+        <div class="menu-list">
+            <div class="menu-item">
+                <div class="item-info">
+                    <span class="item-name">肉骨湯 / 粉腸湯</span>
+                    <span class="item-price">$30</span>
+                </div>
+                <button class="add-btn" onclick="addToCart(30)">+</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-info">
+                    <span class="item-name">豬血湯</span>
+                    <span class="item-price">$20</span>
+                </div>
+                <button class="add-btn" onclick="addToCart(20)">+</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-info">
+                    <span class="item-name">貢丸湯 / 魚丸湯 / 紫菜湯</span>
+                    <span class="item-price">$15</span>
+                </div>
+                <button class="add-btn" onclick="addToCart(15)">+</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="cart-bar">
+        <div class="cart-bar-inner">
+            <div class="cart-total" id="cart-total-text">共 0 件，合計 $0</div>
+            <button class="checkout-btn" id="checkout-btn" disabled onclick="checkout()">結帳去</button>
+        </div>
+    </div>
+
+    <script>
+        let totalAmount = 0;
+        let totalItems = 0;
+
+        function addToCart(price) {
+            totalAmount += price;
+            totalItems += 1;
+            updateCartUI();
+            
+            // 點擊時給予小震動回饋 (僅支援部分手機)
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        }
+
+        function updateCartUI() {
+            const totalText = document.getElementById('cart-total-text');
+            const checkoutBtn = document.getElementById('checkout-btn');
+            
+            totalText.innerText = `共 ${totalItems} 件，合計 $${totalAmount}`;
+            
+            if (totalItems > 0) {
+                checkoutBtn.disabled = false;
+            }
+        }
+
+        function checkout() {
+            alert(`感謝您的訂購！\n總金額為 $${totalAmount} 元。\n(這是一個展示頁面，尚未連接真實結帳系統)`);
+            // 重置購物車
+            totalAmount = 0;
+            totalItems = 0;
+            updateCartUI();
+            document.getElementById('checkout-btn').disabled = true;
+        }
+    </script>
+</body>
+</html>
