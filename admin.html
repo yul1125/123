@@ -1,1 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>早餐店後台管理</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="admin-bg">
+    <div class="header">📊 後台即時接單系統</div>
+    <div class="container">
+        <div class="stats-box">
+            <h3>今日總營業額：$<span id="total-revenue">0</span></h3>
+            <h3>已接單數：<span id="total-orders">0</span></h3>
+        </div>
+        
+        <h3>即時訂單列表</h3>
+        <div id="order-list">
+            </div>
+    </div>
 
+    <script src="app.js"></script>
+    <script>
+        // 頁面載入後自動啟動監聽資料庫的功能
+        window.onload = function() {
+            listenForOrders();
+        }
+    </script>
+</body>
+</html>
