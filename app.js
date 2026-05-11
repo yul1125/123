@@ -1,83 +1,56 @@
-
-// 1. Firebase 資料庫設定 (你需要去 Firebase 網站免費申請這段代碼)
-const firebaseConfig = {
-    apiKey: "你的_API_KEY",
-    authDomain: "你的_專案ID.firebaseapp.com",
-    projectId: "你的_專案ID",
-};
-
-// 初始化 Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-// 2. 點餐系統變數
-let currentOrder = [];
-let totalAmount = 0;
-
-// 3. 加入購物車功能
-function addToCart(itemName, price) {
-    currentOrder.push({ name: itemName, price: price });
-    totalAmount += price;
-    document.getElementById('cart-text').innerText = `共 ${currentOrder.length} 件，總計 $${totalAmount}`;
-}
-
-// 4. 送出訂單至資料庫
-function submitOrder() {
-    if (currentOrder.length === 0) {
-        alert("購物車是空的喔！");
-        return;
-    }
-
-    // 將資料寫入 Firebase 的 'orders' 資料表
-    db.collection("orders").add({
-        items: currentOrder,
-        total: totalAmount,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => {
-        alert("訂單已送出！老闆準備中！");
-        currentOrder = []; // 清空購物車
-        totalAmount = 0;
-        document.getElementById('cart-text').innerText = "購物車空空的";
-    })
-    .catch((error) => {
-        alert("發生錯誤：" + error.message);
-    });
-}
-
-// 5. 後台：即時監聽資料庫的新訂單
+// 5. 後台：即時監聽資料庫的新訂單，並統計品項總量
 function listenForOrders() {
-    let totalRevenue = 0;
-    let totalOrders = 0;
     const orderListDiv = document.getElementById('order-list');
+    const itemStatsDiv = document.getElementById('item-stats'); // 你需要在 admin.html 加這個區塊
 
-    // 監聽 'orders' 資料表，只要有新資料就會自動執行這裡
     db.collection("orders").orderBy("timestamp", "desc")
       .onSnapshot((querySnapshot) => {
-        orderListDiv.innerHTML = ''; // 清空舊畫面
-        totalRevenue = 0;
-        totalOrders = 0;
+        orderListDiv.innerHTML = ''; 
+        let totalRevenue = 0;
+        let totalOrders = 0;
+        
+        // 建立一個物件來統計「所有訂單的品項總和」
+        let globalItemCounts = {};
 
         querySnapshot.forEach((doc) => {
             const orderData = doc.data();
             totalRevenue += orderData.total;
             totalOrders += 1;
 
-            // 把訂單品項變成文字
-            let itemsText = orderData.items.map(item => item.name).join('、 ');
+            // 統計「單筆」訂單的品項 (給明細列表用)
+            let singleOrderCounts = {};
+            orderData.items.forEach(item => {
+                // 單筆統計
+                singleOrderCounts[item.name] = (singleOrderCounts[item.name] || 0) + 1;
+                // 全域總量統計 (給品項總計用)
+                globalItemCounts[item.name] = (globalItemCounts[item.name] || 0) + 1;
+            });
+            
+            // 產生單筆明細卡片文字
+            let itemsText = Object.keys(singleOrderCounts).map(name => `${name} x${singleOrderCounts[name]}`).join('<br>');
 
-            // 產生畫面上的卡片
             orderListDiv.innerHTML += `
                 <div class="order-card">
-                    <strong>單號：${doc.id.substring(0,5)}...</strong><br>
-                    品項：${itemsText}<br>
-                    金額：$${orderData.total}
+                    <div style="color: #e63946; font-weight: bold;">顧客：${orderData.nickname}</div>
+                    <div>${itemsText}</div>
+                    <div style="text-align: right; font-weight: bold; margin-top: 5px;">總額：$${orderData.total}</div>
                 </div>
             `;
         });
 
-        // 更新總計數字
+        // 更新營收數字
         document.getElementById('total-revenue').innerText = totalRevenue;
         document.getElementById('total-orders').innerText = totalOrders;
+
+        // --- 產生「各品項總量」的排行榜 ---
+        // 如果你的 admin.html 有一個 <div id="item-stats"></div> 就可以顯示在這裡
+        if (itemStatsDiv) {
+            let statsHtml = '<ul>';
+            for (const [itemName, count] of Object.entries(globalItemCounts)) {
+                statsHtml += `<li>${itemName}：共 <strong>${count}</strong> 份</li>`;
+            }
+            statsHtml += '</ul>';
+            itemStatsDiv.innerHTML = statsHtml;
+        }
     });
 }
